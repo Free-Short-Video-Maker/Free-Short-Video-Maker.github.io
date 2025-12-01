@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>مُعدِّل مقاس الصور ليوتيوب شورتس</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    html[lang="en"] body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .animate-scale-in {
+      animation: scaleIn 0.2s ease-out;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-900">
+  
+<main class="bg-gray-900 text-gray-100 min-h-screen p-4 sm:p-6 lg:p-8">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Header -->
+    <header class="text-center mb-8 relative">
+      <h1 class="text-4xl sm:text-5xl font-bold text-white tracking-tight">
+        <span data-i18n-key="main_title">مُنشئ فيديوهات وصور لـ</span>
+        <span class="text-red-500">YouTube Shorts</span>
+      </h1>
+      <p data-i18n-key="subtitle" class="mt-4 text-lg text-gray-400 max-w-2xl mx-auto">
+        حوّل صورك إلى فيديوهات قصيرة مع خلفية صوتية، أو صور مُنسّقة بشكل مثالي.
+      </p>
+      <div class="absolute top-0 end-0">
+          <button id="lang-switcher" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+            English
+          </button>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <div class="bg-gray-800 rounded-xl shadow-lg p-6 mb-8 max-w-5xl mx-auto">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-6 mb-6">
+        <div class="w-full sm:w-auto">
+          <label for="file-upload" class="cursor-pointer bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 duration-200 inline-block text-center shadow-md">
+            <span data-i18n-key="select_images">اختر الصور (حتى 50)</span>
+            <input id="file-upload" name="file-upload" type="file" class="sr-only" accept="image/*" multiple>
+          </label>
+        </div>
+        <div class="w-full sm:w-auto">
+          <button
+            id="download-images-button"
+            data-i18n-key="download_all_images"
+            class="w-full sm:w-auto bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 duration-200 shadow-md disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none disabled:opacity-50">
+            تحميل كل الصور (.zip)
+          </button>
+        </div>
+      </div>
+      
+      <hr class="border-gray-700 my-4">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+        <!-- Color Settings -->
+        <div class="space-y-4">
+          <h3 data-i18n-key="color_settings" class="font-semibold text-lg text-gray-200 border-b border-gray-600 pb-2 mb-3">إعدادات الألوان</h3>
+          <div class="flex items-center justify-between">
+            <label for="banner-bg-color" data-i18n-key="banner_bg" class="font-medium text-gray-300">خلفية الشعار:</label>
+            <input id="banner-bg-color" type="color" value="#FFFF00" class="w-12 h-10 p-1 bg-gray-700 border border-gray-600 rounded-md cursor-pointer">
+          </div>
+           <div class="flex items-center justify-between">
+            <label for="font-color" data-i18n-key="font_color" class="font-medium text-gray-300">لون الخط:</label>
+            <input id="font-color" type="color" value="#FFFFFF" class="w-12 h-10 p-1 bg-gray-700 border border-gray-600 rounded-md cursor-pointer">
+          </div>
+        </div>
+        
+        <!-- Banner Texts -->
+        <div class="space-y-4">
+          <h3 data-i18n-key="banner_texts" class="font-semibold text-lg text-gray-200 border-b border-gray-600 pb-2 mb-3">نصوص الشعار</h3>
+          <div class="flex flex-col gap-2">
+            <label for="title-text" data-i18n-key="main_text" class="font-medium text-gray-300">النص الرئيسي:</label>
+            <input id="title-text" type="text" value="استراحة فكر" class="bg-gray-700 border border-gray-600 text-white rounded-md focus:ring-red-500 focus:border-red-500 p-2 w-full text-end">
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="subtitle-text" data-i18n-key="subtitle_text" class="font-medium text-gray-300">النص الفرعي:</label>
+            <input id="subtitle-text" type="text" value="اشترك 📥 فعّل 🔔 حط 👍" class="bg-gray-700 border border-gray-600 text-white rounded-md focus:ring-red-500 focus:border-red-500 p-2 w-full text-end">
+          </div>
+        </div>
+        
+        <!-- Audio Settings -->
+        <div class="md:col-span-2 border-t border-gray-700 pt-6 mt-2">
+          <h3 data-i18n-key="add_audio" class="font-semibold text-lg text-gray-200 border-b border-gray-600 pb-2 mb-3">إضافة صوت للفيديو</h3>
+          <div class="flex items-center gap-4">
+              <label for="audio-file-upload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105 duration-200 text-sm">
+                  <span data-i18n-key="select_audio_file">اختر ملف صوتي</span>
+                  <input id="audio-file-upload" type="file" class="sr-only" accept="audio/*">
+              </label>
+              <div class="flex items-center gap-2 text-sm text-gray-400 flex-grow truncate">
+                  <svg class="w-5 h-5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"></path></svg>
+                  <span id="audio-file-name" class="truncate" data-i18n-key="no_file_chosen" data-i18n-base-text="لم يتم اختيار ملف">لم يتم اختيار ملف</span>
+              </div>
+              <button id="remove-audio-button" data-i18n-title-key="remove_audio_file" title="إزالة الملف الصوتي" class="hidden text-gray-500 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-gray-700">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+          </div>
+        </div>
+         <!-- Video Creation -->
+        <div class="md:col-span-2 border-t border-gray-700 pt-6 mt-2">
+            <h3 data-i18n-key="video_creation" class="font-semibold text-lg text-gray-200 border-b border-gray-600 pb-2 mb-3">إنشاء الفيديو</h3>
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+                <button id="create-all-videos-button" data-i18n-key="create_all_videos" class="w-full sm:w-auto bg-purple-600 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 duration-200 shadow-md disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none disabled:opacity-50">
+                    إنشاء كل الفيديوهات
+                </button>
+                <button id="download-all-videos-button" data-i18n-key="download_all_videos" class="w-full sm:w-auto bg-teal-600 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 duration-200 shadow-md disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none disabled:opacity-50">
+                    تحميل كل الفيديوهات (.zip)
+                </button>
+            </div>
+            <p id="video-creation-progress" class="text-sm text-gray-400 mt-3 h-5"></p>
+        </div>
+      </div>
+
+      <!-- Live Banner Preview -->
+      <div class="border-t border-gray-700 pt-4 mt-6">
+        <h3 data-i18n-key="live_preview" class="font-semibold text-lg text-gray-200 mb-3 text-center">معاينة حية للشعار</h3>
+        <div 
+          id="live-preview-banner"
+          class="w-full h-36 p-4 rounded-lg flex flex-col justify-center items-center text-center overflow-hidden transition-colors duration-200"
+          style="background-color: rgb(255, 255, 0);">
+            <p 
+              id="live-preview-title"
+              class="font-bold leading-tight break-words"
+              style="color: rgb(255, 255, 255); font-family: &quot;Cairo&quot;, Arial, sans-serif; font-size: 2.2rem; line-height: 2.5rem;">
+              استراحة فكر
+            </p>
+            <p 
+              id="live-preview-subtitle"
+              class="mt-2 leading-tight break-words"
+              style="color: rgb(255, 255, 255); font-family: &quot;Cairo&quot;, Arial, sans-serif; font-size: 0.95rem; line-height: 1.25rem;">
+              اشترك 📥 فعّل 🔔 حط 👍
+            </p>
+        </div>
+      </div>
+
+      <div id="error-message-container" class="hidden mt-6 text-center bg-red-900/50 border border-red-700 text-red-300 px-4 py-2 rounded-md">
+      </div>
+    </div>
+
+    <!-- Preview Area -->
+    <div class="mt-8">
+      <div id="loading-spinner" class="hidden text-center py-20">
+          <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-500 mx-auto"></div>
+          <p id="processing-progress" class="mt-4 text-lg text-gray-300"></p>
+      </div>
+      
+      <div id="no-images-placeholder" class="text-center py-20 bg-gray-800/50 border-2 border-dashed border-gray-700 rounded-xl">
+        <svg class="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <h3 data-i18n-key="no_images_placeholder_title" class="mt-2 text-sm font-medium text-gray-300">لم يتم اختيار صور بعد</h3>
+        <p data-i18n-key="no_images_placeholder_desc" class="mt-1 text-sm text-gray-500">ابدأ باختيار ما يصل إلى 50 صورة لعرض المعاينة هنا.</p>
+      </div>
+
+      <div id="processed-images-container" class="hidden">
+        <h2 id="processed-images-header" class="text-2xl font-semibold mb-4 text-center text-gray-300"></h2>
+        <div id="image-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Modal -->
+  <div id="preview-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div class="bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col relative animate-scale-in">
+      <div class="p-4 border-b border-gray-700 flex justify-between items-center">
+        <p id="modal-filename" class="text-gray-300 font-medium truncate"></p>
+        <button id="modal-close-button" class="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="p-4 flex-grow overflow-auto flex items-center justify-center bg-black/20">
+        <img id="modal-image" src="" alt="Image Preview" class="max-w-full max-h-full object-contain rounded-md hidden">
+        <video id="modal-video" src="" class="max-w-full max-h-full object-contain rounded-md hidden" controls autoplay loop></video>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // --- STATE ---
+    let processedItems = [];
+    let fileIdCounter = 0;
+    let state = {
+      isLoading: false,
+      isBulkCreatingVideos: false,
+      imageBackgroundColor: '#FFFFFF',
+      bannerBackgroundColor: '#FFFF00',
+      fontColor: '#FFFFFF',
+      titleText: 'استراحة فكر',
+      subtitleText: 'اشترك 📥 فعّل 🔔 حط 👍',
+      font: '"Cairo", Arial, sans-serif',
+      audioFile: null,
+      audioFileName: 'لم يتم اختيار ملف',
+      language: 'ar',
+    };
+    const SHORTS_WIDTH = 1080;
+    const SHORTS_HEIGHT = 1920;
+    const VIDEO_DURATION_S = 15;
+
+    // --- I18N ---
+    const translations = {
+      ar: {
+        page_title: "مُعدِّل مقاس الصور ليوتيوب شورتس",
+        main_title: "مُنشئ فيديوهات وصور لـ",
+        subtitle: "حوّل صورك إلى فيديوهات قصيرة مع خلفية صوتية، أو صور مُنسّقة بشكل مثالي.",
+        select_images: "اختر الصور (حتى 50)",
+        download_all_images: "تحميل كل الصور (.zip)",
+        color_settings: "إعدادات الألوان",
+        banner_bg: "خلفية الشعار:",
+        font_color: "لون الخط:",
+        banner_texts: "نصوص الشعار",
+        main_text: "النص الرئيسي:",
+        subtitle_text: "النص الفرعي:",
+        add_audio: "إضافة صوت للفيديو",
+        select_audio_file: "اختر ملف صوتي",
+        no_file_chosen: "لم يتم اختيار ملف",
+        remove_audio_file: "إزالة الملف الصوتي",
+        live_preview: "معاينة حية للشعار",
+        processing_progress: "جاري معالجة الصورة {{current}} من {{total}}...",
+        no_images_placeholder_title: "لم يتم اختيار صور بعد",
+        no_images_placeholder_desc: "ابدأ باختيار ما يصل إلى 50 صورة لعرض المعاينة هنا.",
+        processed_content_header: "المحتوى المُعالج ({{count}})",
+        creating_video: "جاري الإنشاء...",
+        play_video: "تشغيل",
+        download_video: "تنزيل",
+        video_status_pending: "في انتظار الإنشاء",
+        video_creation: "إنشاء الفيديو",
+        create_all_videos: "إنشاء كل الفيديوهات",
+        download_all_videos: "تحميل كل الفيديوهات (.zip)",
+        creating_video_progress: "جاري إنشاء الفيديو {{current}} من {{total}}...",
+        error_too_many_images: "لقد اخترت أكثر من 50 صورة. سيتم معالجة أول 50 صورة فقط.",
+        error_processing: "حدث خطأ أثناء معالجة إحدى الصور.",
+        error_video_creation: "حدث خطأ أثناء إنشاء الفيديو.",
+        error_audio_processing: "فشل في معالجة ملف الصوت. سيتم إنشاء الفيديو بدون صوت.",
+        error_invalid_audio: "الرجاء اختيار ملف صوتي صالح (مثل mp3, wav).",
+        lang_switcher: "English",
+      },
+      en: {
+        page_title: "YouTube Shorts Image & Video Creator",
+        main_title: "Video & Image Creator for",
+        subtitle: "Turn your images into short videos with audio, or perfectly formatted images.",
+        select_images: "Select Images (up to 50)",
+        download_all_images: "Download All Images (.zip)",
+        color_settings: "Color Settings",
+        banner_bg: "Banner Background:",
+        font_color: "Font Color:",
+        banner_texts: "Banner Texts",
+        main_text: "Main Text:",
+        subtitle_text: "Subtitle Text:",
+        add_audio: "Add Audio to Video",
+        select_audio_file: "Select Audio File",
+        no_file_chosen: "No file chosen",
+        remove_audio_file: "Remove audio file",
+        live_preview: "Live Banner Preview",
+        processing_progress: "Processing image {{current}} of {{total}}...",
+        no_images_placeholder_title: "No images selected yet",
+        no_images_placeholder_desc: "Start by selecting up to 50 images to see the preview here.",
+        processed_content_header: "Processed Content ({{count}})",
+        creating_video: "Creating...",
+        play_video: "Play",
+        download_video: "Download",
+        video_status_pending: "Pending creation",
+        video_creation: "Video Creation",
+        create_all_videos: "Create All Videos",
+        download_all_videos: "Download All Videos (.zip)",
+        creating_video_progress: "Creating video {{current}} of {{total}}...",
+        error_too_many_images: "You selected more than 50 images. Only the first 50 will be processed.",
+        error_processing: "An error occurred while processing an image.",
+        error_video_creation: "An error occurred during video creation.",
+        error_audio_processing: "Failed to process audio file. The video will be created without sound.",
+        error_invalid_audio: "Please select a valid audio file (e.g., mp3, wav).",
+        lang_switcher: "العربية",
+      }
+    };
+
+    function t(key, params = {}) {
+      let text = translations[state.language]?.[key] || key;
+      for (const [param, value] of Object.entries(params)) {
+          text = text.replace(`{{${param}}}`, value);
+      }
+      return text;
+    }
+
+    // --- DOM ELEMENTS ---
+    const fileInput = document.getElementById('file-upload');
+    const downloadImagesButton = document.getElementById('download-images-button');
+    const bannerBgColorInput = document.getElementById('banner-bg-color');
+    const fontColorInput = document.getElementById('font-color');
+    const titleTextInput = document.getElementById('title-text');
+    const subtitleTextInput = document.getElementById('subtitle-text');
+    const livePreviewBanner = document.getElementById('live-preview-banner');
+    const livePreviewTitle = document.getElementById('live-preview-title');
+    const livePreviewSubtitle = document.getElementById('live-preview-subtitle');
+    const errorMessageContainer = document.getElementById('error-message-container');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const processingProgress = document.getElementById('processing-progress');
+    const noImagesPlaceholder = document.getElementById('no-images-placeholder');
+    const processedImagesContainer = document.getElementById('processed-images-container');
+    const processedImagesHeader = document.getElementById('processed-images-header');
+    const imageGrid = document.getElementById('image-grid');
+    const previewModal = document.getElementById('preview-modal');
+    const modalImage = document.getElementById('modal-image');
+    const modalVideo = document.getElementById('modal-video');
+    const modalFilename = document.getElementById('modal-filename');
+    const modalCloseButton = document.getElementById('modal-close-button');
+    const audioFileInput = document.getElementById('audio-file-upload');
+    const audioFileNameDisplay = document.getElementById('audio-file-name');
+    const removeAudioButton = document.getElementById('remove-audio-button');
+    const langSwitcher = document.getElementById('lang-switcher');
+    const createAllVideosButton = document.getElementById('create-all-videos-button');
+    const downloadAllVideosButton = document.getElementById('download-all-videos-button');
+    const videoCreationProgress = document.getElementById('video-creation-progress');
+
+    // --- GLOBAL FUNCTIONS BINDING ---
+    window.showPreview = showPreview;
+    window.downloadVideo = downloadVideo;
+
+    // --- UI UPDATE FUNCTIONS ---
+    function setLanguage(lang) {
+      state.language = lang;
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+      document.querySelectorAll('[data-i18n-key]').forEach(el => {
+        const key = el.getAttribute('data-i18n-key');
+        el.textContent = t(key);
+      });
+      
+      document.querySelectorAll('[data-i18n-title-key]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title-key');
+        el.title = t(key);
+      });
+
+      document.title = t('page_title');
+      langSwitcher.textContent = t('lang_switcher');
+      
+      if (processedItems.length > 0) {
+        processedImagesHeader.textContent = t('processed_content_header', { count: processedItems.length });
+      }
+      if (!state.audioFile) {
+        audioFileNameDisplay.textContent = t('no_file_chosen');
+      }
+      renderImageGrid();
+    }
+    
+    function updateLivePreview() {
+      livePreviewBanner.style.backgroundColor = state.bannerBackgroundColor;
+      livePreviewTitle.style.color = state.fontColor;
+      livePreviewTitle.style.fontFamily = state.font;
+      livePreviewTitle.textContent = state.titleText;
+      livePreviewSubtitle.style.color = state.fontColor;
+      livePreviewSubtitle.style.fontFamily = state.font;
+      livePreviewSubtitle.textContent = state.subtitleText;
+    }
+
+    function updateAudioUI() {
+      audioFileNameDisplay.textContent = state.audioFile ? state.audioFileName : t('no_file_chosen');
+      removeAudioButton.classList.toggle('hidden', !state.audioFile);
+    }
+
+    function updateView() {
+      const hasItems = processedItems.length > 0;
+      const hasCreatedVideos = processedItems.some(item => item.videoSrc);
+
+      loadingSpinner.classList.toggle('hidden', !state.isLoading);
+      noImagesPlaceholder.classList.toggle('hidden', state.isLoading || hasItems);
+      processedImagesContainer.classList.toggle('hidden', !hasItems || state.isLoading);
+
+      downloadImagesButton.disabled = !hasItems || state.isLoading || state.isBulkCreatingVideos;
+      createAllVideosButton.disabled = !hasItems || state.isLoading || state.isBulkCreatingVideos;
+      downloadAllVideosButton.disabled = !hasCreatedVideos || state.isLoading || state.isBulkCreatingVideos;
+      
+      if (!state.isLoading) {
+        renderImageGrid();
+      }
+    }
+    
+    function setErrorMessage(key, params = {}) {
+      if (key) {
+        errorMessageContainer.textContent = t(key, params);
+        errorMessageContainer.classList.remove('hidden');
+      } else {
+        errorMessageContainer.classList.add('hidden');
+      }
+    }
+
+    function renderImageGrid() {
+      imageGrid.innerHTML = '';
+      if (processedItems.length > 0) {
+        processedImagesHeader.textContent = t('processed_content_header', { count: processedItems.length });
+        processedItems.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'group bg-gray-800 p-2 rounded-lg shadow-lg flex flex-col gap-2 transition-all duration-300';
+          
+          let videoStatusHTML = '';
+          if (item.isCreatingVideo) {
+            videoStatusHTML = `
+              <div class="flex items-center justify-center text-sm text-gray-400 h-10">
+                <svg class="animate-spin -ms-1 me-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="truncate">${t('creating_video')}</span>
+              </div>`;
+          } else if (item.videoSrc) {
+            videoStatusHTML = `
+              <div class="flex items-stretch justify-center gap-1.5 h-10">
+                <button onclick="showPreview(${item.id}, 'video')" class="flex-grow bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-2 rounded-md transition-transform transform hover:scale-105 duration-200 shadow-md">
+                  ${t('play_video')}
+                </button>
+                <button onclick="downloadVideo(${item.id})" title="${t('download_video')}" class="bg-green-600 hover:bg-green-700 text-white p-2 rounded-md transition-transform transform hover:scale-105 duration-200 shadow-md">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </button>
+              </div>`;
+          } else {
+            videoStatusHTML = `
+             <div class="flex items-center justify-center text-xs text-gray-500 h-10 px-2">
+                <svg class="w-4 h-4 me-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="truncate">${t('video_status_pending')}</span>
+              </div>`;
+          }
+
+          div.innerHTML = `
+            <button type="button" class="w-full h-full block focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800 rounded-md overflow-hidden" onclick="showPreview(${item.id}, 'image')">
+              <img src="${item.processedSrc}" alt="${item.originalName}" class="w-full h-auto object-contain rounded-md transition-transform duration-200 group-hover:scale-105">
+            </button>
+            <div class="border-t border-gray-700/50 pt-2">
+              ${videoStatusHTML}
+            </div>
+          `;
+          
+          imageGrid.appendChild(div);
+        });
+      }
+    }
+
+    // --- MODAL LOGIC ---
+    function showPreview(id, type) {
+      const item = findItemById(id);
+      if (!item) return;
+
+      modalFilename.textContent = item.originalName;
+
+      if (type === 'image') {
+        modalImage.src = item.processedSrc;
+        modalImage.classList.remove('hidden');
+        modalVideo.classList.add('hidden');
+        modalVideo.pause();
+        modalVideo.currentTime = 0;
+      } else if (type === 'video' && item.videoSrc) {
+        modalVideo.src = item.videoSrc;
+        modalVideo.classList.remove('hidden');
+        modalImage.classList.add('hidden');
+        modalVideo.play();
+      }
+
+      previewModal.classList.remove('hidden');
+    }
+
+    function hidePreview() {
+      previewModal.classList.add('hidden');
+      modalVideo.pause();
+    }
+
+    // --- CORE LOGIC ---
+    function findItemById(id) {
+        return processedItems.find(item => item.id === id);
+    }
+
+    function processImage(imageSrc, fileName) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = SHORTS_WIDTH;
+          canvas.height = SHORTS_HEIGHT;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject(new Error('Could not get canvas context.'));
+          
+          ctx.fillStyle = state.imageBackgroundColor;
+          ctx.fillRect(0, 0, SHORTS_WIDTH, SHORTS_HEIGHT);
+          
+          const bannerHeight = 200;
+          const imageAreaHeight = SHORTS_HEIGHT - bannerHeight;
+
+          const hRatio = SHORTS_WIDTH / img.width;
+          const vRatio = imageAreaHeight / img.height;
+          const ratio = Math.min(hRatio, vRatio);
+          const newWidth = img.width * ratio;
+          const newHeight = img.height * ratio;
+          const x = (SHORTS_WIDTH - newWidth) / 2;
+          const y = (imageAreaHeight - newHeight) / 2;
+          ctx.drawImage(img, x, y, newWidth, newHeight);
+
+          const bannerY = SHORTS_HEIGHT - bannerHeight;
+          ctx.fillStyle = state.bannerBackgroundColor;
+          ctx.fillRect(0, bannerY, SHORTS_WIDTH, bannerHeight);
+
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+          ctx.fillRect(0, bannerY, SHORTS_WIDTH, 3);
+          
+          ctx.direction = state.language === 'ar' ? 'rtl' : 'ltr';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          ctx.font = `bold 85px ${state.font}`;
+          ctx.fillStyle = state.fontColor;
+          ctx.fillText(state.titleText, SHORTS_WIDTH / 2, bannerY + 70);
+
+          ctx.font = `45px ${state.font}`;
+          ctx.fillStyle = state.fontColor;
+          ctx.fillText(state.subtitleText, SHORTS_WIDTH / 2, bannerY + 145);
+
+          resolve({
+            id: fileIdCounter++,
+            originalName: fileName,
+            processedSrc: canvas.toDataURL('image/jpeg', 0.9),
+            isCreatingVideo: false,
+            videoSrc: null,
+            videoBlob: null,
+          });
+        };
+        img.onerror = () => reject(new Error(`Failed to load image: ${fileName}`));
+        img.src = imageSrc;
+      });
+    }
+    
+    async function createVideo(imageSrc) {
+        return new Promise(async (resolve, reject) => {
+            const FPS = 30;
+            const TOTAL_FRAMES = VIDEO_DURATION_S * FPS;
+
+            const img = new Image();
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = SHORTS_WIDTH;
+                canvas.height = SHORTS_HEIGHT;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return reject(new Error('Could not get canvas context for video.'));
+                
+                let combinedStream;
+                const videoStream = canvas.captureStream(FPS);
+
+                if (state.audioFile) {
+                    try {
+                        const audioContext = new AudioContext();
+                        const arrayBuffer = await state.audioFile.arrayBuffer();
+                        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                        const source = audioContext.createBufferSource();
+                        source.buffer = audioBuffer;
+                        
+                        if (audioBuffer.duration < VIDEO_DURATION_S) {
+                            source.loop = true;
+                        }
+
+                        const destination = audioContext.createMediaStreamDestination();
+                        source.connect(destination);
+
+                        const audioTrack = destination.stream.getAudioTracks()[0];
+                        const videoTrack = videoStream.getVideoTracks()[0];
+                        
+                        combinedStream = new MediaStream([videoTrack, audioTrack]);
+                        source.start();
+                        
+                        setTimeout(() => {
+                            try {
+                              source.stop();
+                              audioContext.close();
+                            } catch (e) {
+                              // Ignore errors on stopping
+                            }
+                        }, VIDEO_DURATION_S * 1000);
+
+                    } catch (err) {
+                        console.error("Audio processing failed:", err);
+                        setErrorMessage("error_audio_processing");
+                        combinedStream = videoStream;
+                    }
+                } else {
+                    combinedStream = videoStream;
+                }
+
+                const recorder = new MediaRecorder(combinedStream, { mimeType: 'video/webm; codecs=vp9,opus' });
+                const chunks = [];
+
+                recorder.ondataavailable = e => chunks.push(e.data);
+                recorder.onstop = () => {
+                    const videoBlob = new Blob(chunks, { type: 'video/webm' });
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    resolve({ videoBlob, videoUrl });
+                };
+                recorder.onerror = reject;
+
+                let frameCount = 0;
+                function drawFrame() {
+                    if (frameCount > TOTAL_FRAMES) {
+                        if (recorder.state === 'recording') {
+                            recorder.stop();
+                        }
+                        return;
+                    }
+                    
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    frameCount++;
+                    requestAnimationFrame(drawFrame);
+                }
+
+                recorder.start();
+                drawFrame();
+            };
+            img.onerror = () => reject(new Error('Failed to load image for video creation.'));
+            img.src = imageSrc;
+        });
+    }
+    
+    async function handleCreateAllVideos() {
+        state.isBulkCreatingVideos = true;
+        updateView();
+
+        const itemsToProcess = processedItems.filter(item => !item.videoSrc);
+        const totalToProcess = itemsToProcess.length;
+
+        for (let i = 0; i < totalToProcess; i++) {
+            const item = itemsToProcess[i];
+            
+            videoCreationProgress.textContent = t('creating_video_progress', { current: i + 1, total: totalToProcess });
+            item.isCreatingVideo = true;
+            renderImageGrid(); 
+
+            try {
+                const { videoBlob, videoUrl } = await createVideo(item.processedSrc);
+                item.videoSrc = videoUrl;
+                item.videoBlob = videoBlob;
+            } catch (error) {
+                console.error(`Video creation failed for ${item.originalName}:`, error);
+                setErrorMessage("error_video_creation");
+            } finally {
+                item.isCreatingVideo = false;
+                renderImageGrid();
+            }
+        }
+
+        videoCreationProgress.textContent = '';
+        state.isBulkCreatingVideos = false;
+        updateView();
+    }
+
+    async function downloadVideo(id) {
+        const item = findItemById(id);
+        if (!item || !item.videoBlob) return;
+
+        const baseName = item.originalName.substring(0, item.originalName.lastIndexOf('.')) || item.originalName;
+        const newFileName = `${baseName}_video.webm`;
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(item.videoBlob);
+        link.download = newFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+    
+    async function handleDownloadAllVideos() {
+      const videosToZip = processedItems.filter(item => item.videoBlob);
+      if (videosToZip.length === 0) return;
+
+      const zip = new JSZip();
+      for (const item of videosToZip) {
+          const baseName = item.originalName.substring(0, item.originalName.lastIndexOf('.')) || item.originalName;
+          const newFileName = `${baseName}_video.webm`;
+          zip.file(newFileName, item.videoBlob);
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(zipBlob);
+      link.download = 'processed_shorts_videos.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    async function handleFileSelection(event) {
+      setErrorMessage(null);
+      processedItems = [];
+      updateView();
+      
+      const input = event.target;
+      if (!input.files || input.files.length === 0) return;
+
+      let files = Array.from(input.files);
+
+      if (files.length > 50) {
+        setErrorMessage('error_too_many_images');
+        files = files.slice(0, 50);
+      }
+      
+      state.isLoading = true;
+      updateView();
+      
+      const processingPromises = [];
+      const totalFiles = files.length;
+
+      for (let i = 0; i < totalFiles; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) continue;
+        
+        processingProgress.textContent = t('processing_progress', { current: i + 1, total: totalFiles });
+        
+        const promise = new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = e => {
+            if (e.target?.result) {
+              processImage(e.target.result, file.name).then(resolve).catch(() => resolve(null));
+            } else {
+              resolve(null);
+            }
+          };
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(file);
+        });
+        processingPromises.push(promise);
+      }
+
+      try {
+        const results = await Promise.all(processingPromises);
+        processedItems = results.filter(r => r !== null);
+      } catch (error) {
+        setErrorMessage('error_processing');
+      } finally {
+        state.isLoading = false;
+        processingProgress.textContent = '';
+        updateView();
+        input.value = '';
+      }
+    }
+    
+    async function downloadAllImages() {
+      if (processedItems.length === 0) return;
+      const zip = new JSZip();
+      
+      for (const item of processedItems) {
+        const baseName = item.originalName.substring(0, item.originalName.lastIndexOf('.')) || item.originalName;
+        const newFileName = `${baseName}_shorts.jpg`;
+        const base64Data = item.processedSrc.split(',')[1];
+        zip.file(newFileName, base64Data, { base64: true });
+      }
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(zipBlob);
+      link.download = 'processed_shorts_images.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+
+    function handleAudioFileSelection(event) {
+        const file = event.target.files[0];
+        if (file && (file.type.startsWith('audio/'))) {
+            state.audioFile = file;
+            state.audioFileName = file.name;
+            setErrorMessage(null);
+        } else if (file) {
+            state.audioFile = null;
+            state.audioFileName = t('no_file_chosen');
+            setErrorMessage('error_invalid_audio');
+        }
+        updateAudioUI();
+    }
+
+    function removeAudioFile() {
+        state.audioFile = null;
+        audioFileInput.value = '';
+        updateAudioUI();
+    }
+    
+    // --- EVENT LISTENERS ---
+    fileInput.addEventListener('change', handleFileSelection);
+    downloadImagesButton.addEventListener('click', downloadAllImages);
+    bannerBgColorInput.addEventListener('input', (e) => {
+      state.bannerBackgroundColor = e.target.value;
+      updateLivePreview();
+    });
+    fontColorInput.addEventListener('input', (e) => {
+      state.fontColor = e.target.value;
+      updateLivePreview();
+    });
+    titleTextInput.addEventListener('input', (e) => {
+      state.titleText = e.target.value;
+      updateLivePreview();
+    });
+    subtitleTextInput.addEventListener('input', (e) => {
+      state.subtitleText = e.target.value;
+      updateLivePreview();
+    });
+    audioFileInput.addEventListener('change', handleAudioFileSelection);
+    removeAudioButton.addEventListener('click', removeAudioFile);
+    langSwitcher.addEventListener('click', () => {
+      const newLang = state.language === 'ar' ? 'en' : 'ar';
+      setLanguage(newLang);
+    });
+    createAllVideosButton.addEventListener('click', handleCreateAllVideos);
+    downloadAllVideosButton.addEventListener('click', handleDownloadAllVideos);
+    
+    // Modal listeners
+    previewModal.addEventListener('click', hidePreview);
+    modalCloseButton.addEventListener('click', hidePreview);
+    previewModal.firstElementChild.addEventListener('click', e => e.stopPropagation());
+
+    // --- INITIALIZATION ---
+    setLanguage(state.language);
+    updateLivePreview();
+    updateView();
+  });
+</script>
+
+</body>
+</html>
